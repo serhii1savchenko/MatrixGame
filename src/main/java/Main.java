@@ -2,25 +2,35 @@ import java.util.*;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
 
 //        double[][] matrix = getMatrix();
 //        double[][] matrix = {{0.9, 0.4, 0.2},
 //                {0.3, 0.6, 0.8},
 //                {0.3, 0.4, 0.8},
 //                {0.5, 0.7, 0.2}};
-        double[][] matrix = {{0.9, 0.4, 0.2, 1, 0.7, 0.4},
-                             {0.3, 0.6, 0.8, 0.1, 1, 0.2}};
+        double[][] matrix = {{0.9, 0.4, 0.2, 1, 0.7, 0.4, 0.4},
+                             {0.3, 0.6, 0.8, 0.1, 1, 0.2, 0.2},
+                             {0.3, 0.6, 0.8, 0.1, 1, 0.2, 0.2}};
+//        double[][] matrix = {{8, 2, 4},
+//                             {4, 5, 6},
+//                             {1, 7, 3}};
 
         matrix = removeDuplicateRowsAndCols(matrix);
+        System.out.println("Матриця після видалення дублюючих рядків та стовпців");
+        printMatrix(matrix);
+        System.out.println();
+
         matrix = optimizeMatrix(matrix);
+        System.out.println("Матриця після оптимізації");
+        printMatrix(matrix);
+        System.out.println();
 
         double[] optimalA = getOptimalStrategyForA(matrix);
         double[] optimalB = getOptimalStrategyForB(matrix);
 
         double lowGamePrice = optimalA[1];
         double maxGamePrice = optimalB[1];
-
         int optimalStrategyA = (int)optimalA[0];
         int optimalStrategyB = (int)optimalB[0];
 
@@ -32,11 +42,29 @@ public class Main {
             System.out.println("Верхня ціна гри (мінімаксний виграш) = " + maxGamePrice);
             System.out.println("Максимінна стратегія для гравця A = " + optimalStrategyA);
             System.out.println("Мінімаксна стратегія для гравця B = " + optimalStrategyB);
+            System.out.println();
+
+            // Пошук змішаних стратегій графічним методом
+            if (matrix.length == 2) {
+                System.out.println("======================================== Графічний метод ========================================");
+                buildGraphicInterpretation(matrix);
+            }
+            System.out.println();
         }
 
-        // Пошук змішаних стратегій
-        if (matrix.length == 2)
-            buildGraphicInterpretation(matrix);
+        // Ітераційний метод
+        System.out.println("======================================== Ітераційний метод ========================================");
+        MixedStrategy[] mixedStrategies = IterationMethod.findMixedStrategies(matrix, 0.001d, 0, 1000);
+        for (MixedStrategy strategy : mixedStrategies) {
+            strategy.print();
+        }
+
+        // Метод лінійного програмування
+        System.out.println("======================================== Метод лінійного програмування ========================================");
+        double[] pA = Simplex.getPsForA(matrix);
+        for (int i = 0; i < pA.length; i++) {
+            System.out.println("P[A" + i + "] = " + pA[i]);
+        }
     }
 
     private static double[][] removeDuplicateRowsAndCols(double[][] input) {
@@ -216,4 +244,13 @@ public class Main {
         return matrix;
     }
 
+    protected static void printMatrix(double[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            StringBuilder row = new StringBuilder();
+            for (int j = 0; j < matrix[i].length; j++) {
+                row.append(matrix[i][j] + "  ");
+            }
+            System.out.println(row.toString());
+        }
+    }
 }
