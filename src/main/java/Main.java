@@ -1,3 +1,7 @@
+import org.apache.commons.math4.optim.PointValuePair;
+import org.apache.commons.math4.optim.linear.*;
+import org.apache.commons.math4.optim.nonlinear.scalar.GoalType;
+
 import java.util.*;
 
 public class Main {
@@ -225,6 +229,22 @@ public class Main {
     private static void buildGraphicInterpretation(double[][] matrix) {
         GRALUtil frame = new GRALUtil(matrix);
         frame.setVisible(true);
+
+        // Пошук верхньої точки для нижньої ламаної
+        LinearObjectiveFunction f = new LinearObjectiveFunction(new double[]{0, 1}, 0);
+        ArrayList<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
+        for (int j = 0; j < matrix[0].length; j++) {
+            double a1 = matrix[0][j];
+            double a2 = matrix[1][j];
+            constraints.add(new LinearConstraint(new double[]{(a2-a1), -1d}, Relationship.GEQ, -a1));
+        }
+
+        SimplexSolver solver = new SimplexSolver();
+        PointValuePair solution = solver.optimize(f, new LinearConstraintSet(constraints), GoalType.MAXIMIZE,
+                new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+
+        System.out.println("Розв'язок графічним методом. P[A1] = " + solution.getPoint()[0] +
+                ". \nЦіна гри = " + solution.getValue() + ".");
     }
 
     private static double[][] getMatrix() {
